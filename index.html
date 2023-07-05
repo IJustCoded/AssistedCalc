@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Assisted Install</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    
+    .container {
+      width: 90%;
+      max-width: 500px;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"] {
+      width: 300px;
+      padding: 5px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 5px 10px;
+    }
+
+    .order-numbers-container {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    ul {
+      margin-top: 20px;
+      padding-left: 0;
+    }
+
+    li {
+      list-style: none;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Assisted Install</h1>
+  
+  <label for="orderNumbers">Enter Assembly Order Numbers:</label>
+  <input type="text" id="orderNumbers" name="orderNumbers">
+  
+  <button onclick="processOrderNumbers()">Add</button>
+  
+  <h2>Assembly Order Numbers:</h2>
+  <div class="order-numbers-container">
+    <ul id="orderNumbersList"></ul>
+  </div>
+  
+  <button onclick="undoRemove()">Undo</button>
+  
+  <button onclick="copyOrderNumbers()">Copy</button>
+  
+  <button onclick="submitAssemblyOrderNumbers()">Submit Assembly Order Numbers</button>
+
+  <script>
+    function submitAssemblyOrderNumbers() {
+      localStorage.setItem("orderNumbers", JSON.stringify(orderNumbersArray));
+      window.location.href = "location.html";
+      alert("Assembly Order Numbers submitted successfully!");
+    }
+    var orderNumbersArray = [];
+    var removedOrderNumbersArray = [];
+
+    function processOrderNumbers() {
+      var orderNumbersInput = document.getElementById("orderNumbers");
+      var orderNumbers = orderNumbersInput.value.trim().split(" ");
+      var orderNumbersList = document.getElementById("orderNumbersList");
+      
+      // Clear the existing list
+      orderNumbersList.innerHTML = "";
+      
+      // Populate the list with the entered order numbers
+      orderNumbers.reverse().forEach(function(number) {
+        var li = document.createElement("li");
+        li.textContent = number;
+        orderNumbersList.prepend(li);
+        orderNumbersArray.unshift(number);
+        
+        // Add a click event listener to remove the clicked item
+        li.addEventListener("click", function() {
+          var removedNumber = this.textContent;
+          orderNumbersList.removeChild(this);
+          removedOrderNumbersArray.push(removedNumber);
+        });
+      });
+    }
+    
+    function undoRemove() {
+      if (removedOrderNumbersArray.length > 0) {
+        var lastRemovedNumber = removedOrderNumbersArray.pop();
+        var orderNumbersList = document.getElementById("orderNumbersList");
+        
+        var li = document.createElement("li");
+        li.textContent = lastRemovedNumber;
+        orderNumbersList.prepend(li);
+        orderNumbersArray.unshift(lastRemovedNumber);
+      }
+    }
+    
+    function copyOrderNumbers() {
+      var orderNumbersString = orderNumbersArray.join(" ");
+      navigator.clipboard.writeText(orderNumbersString).then(function() {
+        console.log("Order numbers copied to clipboard");
+      }).catch(function(error) {
+        console.error("Failed to copy order numbers:", error);
+      });
+    }
+    
+    function submitAssemblyOrderNumbers() {
+      localStorage.setItem("orderNumbers", JSON.stringify(orderNumbersArray));
+      window.location.href = "Location.html";
+    }
+  </script>
+</body>
+</html>
