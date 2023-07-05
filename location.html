@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Location</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    
+    .container {
+      width: 90%;
+      max-width: 500px;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      width: 300px;
+      padding: 5px;
+      margin-right: 10px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 5px 10px;
+    }
+
+    .location-section {
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    .order-number-item {
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+
+    .undo-button {
+      margin-top: 5px;
+    }
+
+    .locations-scrollable {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Location</h1>
+  
+  <input type="text" id="locationInput" placeholder="Enter a location" oninput="capitalizeLocation()">
+  <button onclick="addLocation()">Add Location(s)</button>
+
+  <div class="locations-scrollable">
+    <div id="locationsContainer"></div>
+  </div>
+
+  <button onclick="submitLocations()">Submit Location(s)</button>
+
+  <script>
+    var locationsArray = [];
+
+    function capitalizeLocation() {
+      var locationInput = document.getElementById("locationInput");
+      locationInput.value = locationInput.value.toUpperCase();
+    }
+
+    function addLocation() {
+      var locationInput = document.getElementById("locationInput");
+      var location = locationInput.value.trim();
+      
+      if (location) {
+        locationsArray.unshift({ location: location, orderNumbers: [] }); // Insert at the beginning of the array
+        locationInput.value = ""; // Clear the input field after adding the location
+        renderLocations();
+      }
+    }
+
+    function renderLocations() {
+      var locationsContainer = document.getElementById("locationsContainer");
+      locationsContainer.innerHTML = "";
+
+      locationsArray.forEach(function(locationObj) {
+        var locationSection = document.createElement("div");
+        locationSection.classList.add("location-section");
+
+        var locationHeader = document.createElement("h2");
+        locationHeader.textContent = "Location: " + locationObj.location;
+        locationSection.appendChild(locationHeader);
+
+        locationObj.orderNumbers.forEach(function(orderNumber) {
+          var orderNumberItem = document.createElement("div");
+          orderNumberItem.textContent = "Order Number: " + orderNumber;
+          orderNumberItem.dataset.orderNumber = orderNumber;
+          orderNumberItem.addEventListener("click", function(event) {
+            removeOrderNumber(locationObj, event.target.dataset.orderNumber);
+          });
+          locationSection.appendChild(orderNumberItem);
+        });
+
+        var orderNumberInput = document.createElement("input");
+        orderNumberInput.type = "text";
+        orderNumberInput.placeholder = "Enter order numbers separated by spaces";
+        orderNumberInput.addEventListener("keydown", function(event) {
+          if (event.key === "Enter") {
+            addOrderNumbersForLocation(locationObj, orderNumberInput.value.trim());
+            orderNumberInput.value = ""; // Clear the input field after adding the order numbers
+          }
+        });
+        locationSection.appendChild(orderNumberInput);
+
+        var addOrderNumbersButton = document.createElement("button");
+        addOrderNumbersButton.textContent = "Add Order Numbers";
+        addOrderNumbersButton.addEventListener("click", function() {
+          addOrderNumbersForLocation(locationObj, orderNumberInput.value.trim());
+          orderNumberInput.value = ""; // Clear the input field after adding the order numbers
+        });
+        locationSection.appendChild(addOrderNumbersButton);
+
+        locationsContainer.appendChild(locationSection);
+      });
+    }
+
+    function addOrderNumbersForLocation(locationObj, orderNumbers) {
+      if (orderNumbers) {
+        var newOrderNumbers = orderNumbers.split(" ");
+        locationObj.orderNumbers = locationObj.orderNumbers.concat(newOrderNumbers);
+        renderLocations();
+      }
+    }
+
+    function removeOrderNumber(locationObj, orderNumber) {
+      var index = locationObj.orderNumbers.indexOf(orderNumber);
+      if (index !== -1) {
+        var removedOrderNumber = locationObj.orderNumbers.splice(index, 1)[0];
+        renderLocations();
+
+        var undoButton = document.createElement("button");
+        undoButton.textContent = "Undo";
+        undoButton.addEventListener("click", function() {
+          undoRemove(locationObj, removedOrderNumber);
+        });
+
+        var locationSection = document.querySelector(".location-section");
+        locationSection.appendChild(undoButton);
+      }
+    }
+
+    function undoRemove(locationObj, orderNumber) {
+      locationObj.orderNumbers.push(orderNumber);
+      renderLocations();
+    }
+
+    function submitLocations() {
+      localStorage.setItem("locationsArray", JSON.stringify(locationsArray));
+      window.location.href = "results.html";
+    }
+  </script>
+</body>
+</html>
